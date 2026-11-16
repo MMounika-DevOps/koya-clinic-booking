@@ -63,22 +63,22 @@ pipeline {
         }
 
         stage('Verify Deployment') {
-            steps {
-                sh '''
-                    set -eu
+    steps {
+        sh '''
+            set -eu
 
-                    echo "Checking running containers"
-                    docker compose ps
+            echo "Checking running container"
+            docker ps --filter name=koya-clinic-booking \
+              --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
 
-                    echo "Checking application health"
-                    curl --fail --retry 5 --retry-delay 2 \
-                      http://localhost:8000/docs -o /dev/null
+            echo "Checking application endpoint"
+            curl --fail --retry 5 --retry-delay 2 \
+              http://localhost:8000/docs -o /dev/null
 
-                    echo "Application health check passed"
-                '''
-            }
-        }
+            echo "Application health check passed"
+        '''
     }
+}
 
     post {
         success {
