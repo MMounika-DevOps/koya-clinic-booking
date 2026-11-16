@@ -60,23 +60,38 @@ pipeline {
                     '''
                 }
             }
-        }
 
         stage('Verify Deployment') {
-    steps {
-        sh '''
-            set -eu
+            steps {
+                sh '''
+                    set -eu
 
-            echo "Checking running container"
-            docker ps --filter name=koya-clinic-booking \
-              --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
+                    echo "Checking running container"
+                    docker ps --filter name=koya-clinic-booking \
+                      --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
 
-            echo "Checking application endpoint"
-            curl --fail --retry 5 --retry-delay 2 \
-              http://localhost:8000/docs -o /dev/null
+                    echo "Checking application endpoint"
+                    curl --fail --retry 5 --retry-delay 2 \
+                      http://localhost:8000/docs -o /dev/null
 
-            echo "Application health check passed"
-        '''
+                    echo "Application health check passed"
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Koya Clinic Booking deployment completed successfully!'
+        }
+
+        failure {
+            echo 'Pipeline failed. Check Console Output for the error.'
+        }
+
+        always {
+            sh 'rm -f .env'
+        }
     }
 }
 
