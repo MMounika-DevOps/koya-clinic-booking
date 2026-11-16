@@ -5,7 +5,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                echo 'Code checked out from GitHub'
+                echo 'Checking out Koya Clinic Booking'
                 sh 'git status --short --branch'
             }
         }
@@ -37,8 +37,8 @@ pipeline {
 
                         trap 'rm -f .env' EXIT
 
-                        if [ -z "$API_KEY" ]; then
-                            echo "ERROR: Jenkins API key is empty"
+                        if [ -z "${API_KEY:-}" ]; then
+                            echo "ERROR: Jenkins API key is empty or unavailable"
                             exit 1
                         fi
 
@@ -49,8 +49,13 @@ pipeline {
                             exit 1
                         fi
 
+                        echo "Validating Docker Compose configuration"
                         docker compose config --quiet
+
+                        echo "Building Docker image"
                         docker compose build
+
+                        echo "Deploying application"
                         docker compose up -d
                     '''
                 }
@@ -60,9 +65,15 @@ pipeline {
         stage('Verify Deployment') {
             steps {
                 sh '''
+                    set -eu
+
+                    echo "Checking running containers"
                     docker compose ps
+
+                    echo "Checking application health"
                     curl --fail --retry 5 --retry-delay 2 \
                       http://localhost:8000/docs -o /dev/null
+
                     echo "Application health check passed"
                 '''
             }
@@ -73,8 +84,13 @@ pipeline {
         success {
             echo 'Koya Clinic Booking deployment completed successfully!'
         }
+
         failure {
-            echo 'Pipeline failed. Check the stage logs.'
+            echo 'Pipeline failed. Check Console Output for the error.'
+        }
+
+        always {
+            sh 'rm -f .env'
         }
     }
 }
