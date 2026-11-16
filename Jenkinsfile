@@ -24,12 +24,7 @@ pipeline {
 
         stage('Build and Deploy') {
             steps {
-                withCredentials([
-                    string(
-                        credentialsId: 'clinic-api-key',
-                        variable: 'API_KEY'
-                    )
-                ]) {
+                withCredentials([string(credentialsId: 'clinic-api-key', variable: 'API_KEY')]) {
                     sh '''
                         set -eu
                         set +x
@@ -42,14 +37,8 @@ pipeline {
                         fi
 
                         printf 'API_KEY=%s\\n' "$API_KEY" > .env
-
-                        echo "Validating Docker Compose configuration"
                         docker compose config --quiet
-
-                        echo "Building Docker image"
                         docker compose build
-
-                        echo "Deploying application"
                         docker compose up -d
                     '''
                 }
@@ -60,16 +49,9 @@ pipeline {
             steps {
                 sh '''
                     set -eu
-
-                    echo "Checking running container"
-                    docker ps --filter name=koya-clinic-booking \
-                      --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
-
-                    echo "Checking application endpoint"
-                    curl --fail --retry 5 --retry-delay 2 \
-                      http://localhost:8000/docs -o /dev/null
-
-                    echo "Application health check passed"
+                    docker ps --filter name=koya-clinic-booking --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
+                    curl --fail --retry 5 --retry-delay 2 http://localhost:8000/docs -o /dev/null
+                    echo 'Application health check passed'
                 '''
             }
         }
@@ -79,11 +61,9 @@ pipeline {
         success {
             echo 'Koya Clinic Booking deployment completed successfully!'
         }
-
         failure {
             echo 'Pipeline failed. Check Console Output for the error.'
         }
-
         always {
             sh 'rm -f .env'
         }
