@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -60,6 +59,7 @@ pipeline {
                     '''
                 }
             }
+        }
 
         stage('Verify Deployment') {
             steps {
@@ -94,19 +94,3 @@ pipeline {
         }
     }
 }
-
-    post {
-        success {
-            echo 'Koya Clinic Booking deployment completed successfully!'
-        }
-
-        failure {
-            echo 'Pipeline failed. Check Console Output for the error.'
-        }
-
-        always {
-            sh 'rm -f .env'
-        }
-    }
-}
-
