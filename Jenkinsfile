@@ -24,13 +24,21 @@ pipeline {
 
         stage('Build Image') {
             steps {
-                sh 'docker compose build'
+                withCredentials([
+                    string(credentialsId: 'clinic-api-key', variable: 'API_KEY')
+                ]) {
+                    sh 'docker compose build'
+                }
             }
         }
 
         stage('Deploy') {
             steps {
-                sh 'docker compose up -d'
+                withCredentials([
+                    string(credentialsId: 'clinic-api-key', variable: 'API_KEY')
+                ]) {
+                    sh 'docker compose up -d'
+                }
             }
         }
 

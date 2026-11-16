@@ -1,14 +1,14 @@
+
 services:
   clinic-app:
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        VITE_API_KEY: ${API_KEY:?Set API_KEY in .env}
+        VITE_API_KEY: ${API_KEY:?Set API_KEY in Jenkins credentials}
     container_name: koya-clinic-booking
-    env_file:
-      - .env
     environment:
+      API_KEY: ${API_KEY:?Set API_KEY in Jenkins credentials}
       DATABASE_URL: sqlite:////data/clinic.db
       SEED_DEMO_SLOTS: "true"
     ports:
@@ -19,3 +19,4 @@ services:
 
 volumes:
   clinic-data:
+
