@@ -1,3 +1,4 @@
+cat > Jenkinsfile <<'EOF'
 pipeline {
     agent any
 
@@ -33,20 +34,14 @@ pipeline {
                         set -eu
                         set +x
                         umask 077
-
                         trap 'rm -f .env' EXIT
 
                         if [ -z "${API_KEY:-}" ]; then
-                            echo "ERROR: Jenkins API key is empty or unavailable"
+                            echo "ERROR: Jenkins API key is unavailable"
                             exit 1
                         fi
 
                         printf 'API_KEY=%s\\n' "$API_KEY" > .env
-
-                        if ! grep -q '^API_KEY=.' .env; then
-                            echo "ERROR: Temporary environment file is invalid"
-                            exit 1
-                        fi
 
                         echo "Validating Docker Compose configuration"
                         docker compose config --quiet
@@ -94,3 +89,4 @@ pipeline {
         }
     }
 }
+EOF
