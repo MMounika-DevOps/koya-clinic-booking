@@ -22,22 +22,23 @@ pipeline {
             }
         }
 
-        stage('Build Image') {
+        stage('Build and Deploy') {
             steps {
                 withCredentials([
-                    string(credentialsId: 'clinic-api-key', variable: 'API_KEY')
+                    string(
+                        credentialsId: 'clinic-api-key',
+                        variable: 'API_KEY'
+                    )
                 ]) {
-                    sh 'docker compose build'
-                }
-            }
-        }
+                    sh '''
+                        set +x
+                        trap 'rm -f .env.jenkins' EXIT
 
-        stage('Deploy') {
-            steps {
-                withCredentials([
-                    string(credentialsId: 'clinic-api-key', variable: 'API_KEY')
-                ]) {
-                    sh 'docker compose up -d'
+                        printf 'API_KEY=%s\\n' "$API_KEY" > .env.jenkins
+
+                        docker compose --env-file .env.jenkins build
+                        docker compose --env-file .env.jenkins up -d
+                    '''
                 }
             }
         }
