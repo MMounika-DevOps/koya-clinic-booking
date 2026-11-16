@@ -1,0 +1,21 @@
+services:
+  clinic-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_KEY: ${API_KEY:?Set API_KEY in .env}
+    container_name: koya-clinic-booking
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: sqlite:////data/clinic.db
+      SEED_DEMO_SLOTS: "true"
+    ports:
+      - "8000:8000"
+    volumes:
+      - clinic-data:/data
+    restart: unless-stopped
+
+volumes:
+  clinic-data:
